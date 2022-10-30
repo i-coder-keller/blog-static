@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="javascript vue react webpack" />
+  <meta name="author" content="Keller" />
+  <meta name="description" content="Keller的个人博客" />
+  
+  
+  <title>
+    
+      wavesurfer-js音频处理实战及优化 
+      
+      
+    
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto:400,400italic,600|Roboto+Mono" rel="stylesheet">
+
+  <!-- hexo site css -->
+  
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/common.css">
+<link rel="stylesheet" href="/iconfont/iconfont.css">
+
+
+  
+
+  
+    
+<link rel="stylesheet" href="/css/post.css">
+
+  
+
+  <!-- jquery3.3.1 -->
+  <script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.3.1/jquery.min.js"></script>
+
+  <!-- fancybox -->
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <script async src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js"></script>
+  
+<script src="/js/fancybox.js"></script>
+
+
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <a href="/">Keller</a>
+</div>
+
+
+      <p class="links">
+  
+    <a title="github" target="_blank" href="https://github.com/i-coder-keller">
+      <i class="iconfont icon-github"></i>
+    </a>
+  
+    <a title="email" target="" href="mailto:yongzhi1.liu@gmail.com">
+      <i class="iconfont icon-envelope"></i>
+    </a>
+  
+</p>
+
+
+      <div class="main">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+<!-- LaTex Display -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    }
+  };
+</script>
+
+<div class="post">
+  <h3 class="date">
+    Oct 30, 2022
+  </h3>
+  <h1>
+    wavesurfer-js音频处理实战及优化
+  </h1>
+  <div class="content markdown-body">
+    <p><img src="https://image.liuyongzhi.cn/imageswavesurfer-js.png"></p>
+<h2 id="什么是wavesurfer-js"><a href="#什么是wavesurfer-js" class="headerlink" title="什么是wavesurfer-js?"></a>什么是<a target="_blank" rel="noopener" href="https://wavesurfer-js.org/">wavesurfer-js</a>?</h2><blockquote>
+<p><strong>wavesurfer.js</strong> is a customizable audio waveform visualization, built on top of <a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">Web Audio API</a> and <a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API">HTML5 Canvas</a>.</p>
+</blockquote>
+<p><strong>wavesurfer.js</strong>是一个可定制的音频波形可视化，建立在<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">Web Audio API</a>和<a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API">HTML5 Canvas</a>之上。</p>
+<p>wavesurfer还支持<a href="%5Bwavesurfer.js%5D(https://wavesurfer-js.org/plugins/)">插件</a>，包括并不限于剪裁、录制等</p>
+<h2 id="wavesurfer的使用"><a href="#wavesurfer的使用" class="headerlink" title="wavesurfer的使用"></a>wavesurfer的使用</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm i wavesurfer.js</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> srouce = <span class="string">&quot;https://wavesurfer-js.org/example/media/demo.wav&quot;</span></span><br><span class="line"><span class="keyword">const</span> ref = <span class="title class_">Wavesurferjs</span>.<span class="title function_">create</span>(&#123;</span><br><span class="line">            <span class="attr">container</span>: refs.<span class="property">current</span>, <span class="comment">// 目标dom</span></span><br><span class="line">            <span class="attr">waveColor</span>: <span class="string">&#x27;#544979&#x27;</span>, <span class="comment">// 波形图颜色</span></span><br><span class="line">            <span class="attr">progressColor</span>: <span class="string">&#x27;#6B58B2&#x27;</span>, <span class="comment">// 播放进度颜色</span></span><br><span class="line">            <span class="attr">height</span>: <span class="number">40</span>,</span><br><span class="line">            <span class="attr">hideCursor</span>: <span class="literal">true</span>,</span><br><span class="line">            <span class="attr">fillParent</span>: <span class="literal">true</span>,</span><br><span class="line">            <span class="attr">barGap</span>:<span class="number">1</span>,</span><br><span class="line">            <span class="attr">barWidth</span>:<span class="number">1</span>,</span><br><span class="line">        &#125;)</span><br><span class="line">ref.<span class="title function_">load</span>(source)</span><br></pre></td></tr></table></figure>
+
+<h3 id="坑点"><a href="#坑点" class="headerlink" title="坑点"></a>坑点</h3><ul>
+<li><p><code>WavesurferJS</code>可以实时解析音频文件的波状图，波状图解析速度与文件大小成正比</p>
+<blockquote>
+<p><code>load</code>函数还可以接受第二个参数，第二个参数是一个<code>json</code>数据，也是波形图绘制的数据。在<code>wavesurfer</code>实例上存在<code>backend</code>属性,此属性中存在<code>getPeaks</code>函数，我们可以在后台上传时，先解析出音频数据，将音频数据与音频文件绑定上传，这样C端可以直接使用音频数据，省去解析时间</p>
+</blockquote>
+<h4 id="example"><a href="#example" class="headerlink" title="example"></a>example</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">parseWaveView</span> = url =&gt; <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> target = <span class="variable language_">document</span>.<span class="title function_">createElement</span>(<span class="string">&#x27;div&#x27;</span>)</span><br><span class="line">    target.<span class="property">style</span>.<span class="property">width</span> = <span class="string">&#x27;100%&#x27;</span></span><br><span class="line">    target.<span class="property">style</span>.<span class="property">height</span> = <span class="string">&#x27;200px&#x27;</span></span><br><span class="line">    target.<span class="property">style</span>.<span class="property">position</span> = <span class="string">&#x27;absolute&#x27;</span></span><br><span class="line">    target.<span class="property">style</span>.<span class="property">top</span> = <span class="string">&#x27;-100%&#x27;</span></span><br><span class="line">    <span class="keyword">const</span> instance = wavesurfer.<span class="title function_">create</span>(&#123;</span><br><span class="line">       <span class="attr">container</span>: target</span><br><span class="line">    &#125;)</span><br><span class="line">    instance.<span class="title function_">load</span>(url)</span><br><span class="line">    instance.<span class="title function_">on</span>(<span class="string">&#x27;ready&#x27;</span>, <span class="title function_">async</span>() =&gt; &#123;</span><br><span class="line">      <span class="keyword">const</span> peaks = instance.<span class="property">backend</span>.<span class="title function_">getPeaks</span>(</span><br><span class="line">            instance.<span class="property">backend</span>.<span class="property">mergedPeaks</span>.<span class="property">length</span>,</span><br><span class="line">             <span class="number">0</span>, </span><br><span class="line">            instance.<span class="property">backend</span>.<span class="property">mergedPeaks</span>.<span class="property">length</span></span><br><span class="line">            )</span><br><span class="line">      <span class="keyword">await</span> <span class="title function_">putWaveform2Oss</span>(&#123;</span><br><span class="line">        <span class="attr">mediaId</span>: mediaId,</span><br><span class="line">        <span class="attr">confArr</span>: peaks</span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="variable language_">document</span>.<span class="property">body</span>.<span class="title function_">removeChild</span>(target)</span><br><span class="line">    <span class="title function_">resolve</span>(peaks)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// getPeaks函数接收三个参数，分别是音频数据总长度、截取的起始位置、截取的结束位置</span></span><br><span class="line"><span class="comment">// 参数可以在backend中拿到</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>播放音频时，如果音频文件过大并且在没有加载完成后播放其他实例，会加载混乱，播放的声音和应该播放的音频不一致，还会导致内存溢出等问题。</p>
+</li>
+</ul>
+<blockquote>
+<p><code>load</code>函数的第一个参数可以使用一个空的音频文件，在播放时可以获取当前播放的音频地址使用<code>audio</code>标签控制播放，保证同一时间只加载一个音频资源，减少内存压力。另外在点击波形图改变进度时，可以<a href="%5Bwavesurfer.js%5D(https://wavesurfer-js.org/docs/events.html)">监听事件</a>获取当前时间来设置<code>audio</code>标签时间。同样在<code>audio</code>播放中获取当前播放进度同步波形图进度</p>
+</blockquote>
+<h4 id="example-1"><a href="#example-1" class="headerlink" title="example"></a>example</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设置波形图播放进度 time 0 - 1</span></span><br><span class="line">nstance.<span class="title function_">seekTo</span>([time])</span><br><span class="line"><span class="comment">// 点击波形图调整播放时间</span></span><br><span class="line"><span class="comment">// 1. 点击时获取播放进度的长度除以总波形图的长度得到百分比</span></span><br><span class="line"><span class="comment">// 2. 使用百分比乘以音频总时长得到当前时间</span></span><br><span class="line"><span class="comment">// 3. 设置audio当前时间</span></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">setCurrentProgress</span> = current =&gt; &#123;</span><br><span class="line">    audio.<span class="property">currentTime</span> = current * duration</span><br><span class="line">&#125;</span><br><span class="line">nstance.<span class="property">drawer</span>.<span class="title function_">on</span>(<span class="string">&quot;click&quot;</span>, <span class="function"><span class="params">e</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="title function_">setCurrentProgress</span>(e.<span class="property">layerX</span> / e.<span class="property">target</span>.<span class="property">clientWidth</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h3><ul>
+<li><p><a target="_blank" rel="noopener" href="https://wavesurfer-js.org/">wavesurfer-js</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/bbc/peaks.js">peaks.js</a></p>
+</li>
+<li><p>如果你还想来我的<a target="_blank" rel="noopener" href="https://overdev.cn/">博客</a>看看</p>
+</li>
+</ul>
+
+  </div>
+  
+    
+      <a id="older" class="blog-nav" href="/2022/08/03/deepClone/">OLDER&nbsp;&gt;</a>
+      
+        
+            
+</div>
+        <div class="footer">
+  
+    <div class="footer-more">
+      
+        <a href="https://www.liuyongzhi.cn/">路漫漫其修远兮，吾将上下而求索</a>
+        
+    </div>
+  
+  <div class="footer-more">
+      <a target="_blank" rel="noopener" href="https://www.upyun.com/?utm_source=lianmeng&utm_medium=referral">本网站由<img src="https://image.liuyongzhi.cn/images/upyun.png">提供CDN加速/云存储服务</a>
+  </div>
+</div>
+
+      </div>
+
+      <div class="back-to-top hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+      
+  <div class="search-icon" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-box">
+        <div class="search-title">
+          <!-- <span class="search-icon-input">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </span> -->
+          
+            <input type="text" class="search-input" id="search-input" placeholder="$ grep...">
+          
+          <span class="search-close-icon" id="search-close-icon">
+            <a href="javascript: void(0)">
+              <i class="iconfont icon-close"></i>
+            </a>
+          </span>
+        </div>
+        <div class="search-result" id="search-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    // inputArea.onclick = function() {
+    //   getSearchFile()
+    //   this.onclick = null
+    // }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        inputArea.focus()
+        getSearchFile()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'><span></ul>";
+      // $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='/" + data_url + "' class='search-result-title'><h2>" + orig_data_title + "</h2></a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<h3 class=\"search-result-abstract\">" + match_content + "...</h3>"
+                }
+                str += "<hr></li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/leedom92/hexo-theme-leedom#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+    </div>
+  </body>
+</html>
